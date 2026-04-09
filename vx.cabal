@@ -18,23 +18,26 @@ library
     Vx.Api
     Vx.Exec
     Vx.Parse
+    Vx.Platform
     Vx.Resolve
   build-depends:
     , aeson
     , base                 >=4.18 && <5
+    , bytestring
     , http-client
     , http-client-tls
-    , optparse-applicative
+    , http-types
     , text
-    , typed-process
+    , unix
 
 executable vx
   import:           warnings
-  hs-source-dirs:   src
+  hs-source-dirs:   app
   main-is:          Main.hs
   default-language: GHC2021
   build-depends:
     , base >=4.18 && <5
+    , text
     , vx
 
 test-suite vx-test
@@ -47,7 +50,9 @@ test-suite vx-test
   build-tool-depends:
     hspec-discover:hspec-discover
   build-depends:
+    , aeson
     , base       >=4.18 && <5
     , hspec
     , QuickCheck
+    , text
     , vx

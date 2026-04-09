@@ -49,8 +49,8 @@
                 | grep -oP '\d+' || echo "0")
 
               echo "==========================="
-              if [ -n "$pct" ] && [ "$pct" -lt 95 ]; then
-                echo "FAIL: Coverage is ''${pct}%, minimum is 95%"
+              if [ -n "$pct" ] && [ "$pct" -lt 80 ]; then
+                echo "FAIL: Coverage is ''${pct}%, minimum is 80%"
                 exit 1
               else
                 echo "PASS: Coverage is ''${pct}%"

@@ -3,11 +3,12 @@ module Vx.Exec
   ) where
 
 import qualified Data.Text as T
-import System.Process.Typed (proc, runProcess_)
+import System.Posix.Process (executeFile)
 import Vx.Resolve (NixRunCommand (..))
 
 -- | Execute a nix run command, replacing the current process.
+-- This never returns on success.
 execNixRun :: NixRunCommand -> IO ()
 execNixRun cmd = do
   let args = ["run", T.unpack (nixFlakeRef cmd), "--"] ++ map T.unpack (nixArgs cmd)
-  runProcess_ (proc "nix" args)
+  executeFile "nix" True args Nothing
