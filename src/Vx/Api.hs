@@ -1,7 +1,10 @@
 module Vx.Api
   ( NixhubResponse (..)
+  , ResolveError (..)
   , parseNixhubResponse
+  , parseVersionList
   , resolveVersion
+  , fetchVersions
   ) where
 
 import qualified Data.Aeson as Aeson
@@ -17,13 +20,18 @@ import Network.HTTP.Client
   , responseBody
   , responseStatus
   )
-import Network.HTTP.Types.Status (statusCode)
 import Network.HTTP.Client.TLS (tlsManagerSettings)
+import Network.HTTP.Types.Status (statusCode)
 
 data NixhubResponse = NixhubResponse
   { rev :: Text
   , attrPath :: Text
   }
+  deriving (Show, Eq)
+
+data ResolveError
+  = VersionNotFound
+  | ApiError Text
   deriving (Show, Eq)
 
 -- | Parse a Nixhub /v2/resolve JSON response, extracting rev and attr_path
@@ -60,6 +68,21 @@ extractFlakeInstallable (Aeson.Object sysObj) = do
     _ -> Left "'flake_installable' is not an object"
 extractFlakeInstallable _ = Left "system entry is not an object"
 
+-- | Parse a Nixhub /v2/pkg JSON response, extracting the list of version strings.
+parseVersionList :: ByteString -> Either Text [Text]
+parseVersionList body =
+  case Aeson.eitherDecode body of
+    Left err -> Left $ "JSON parse error: " <> T.pack err
+    Right (Aeson.Object top) ->
+      case KeyMap.lookup "releases" top of
+        Nothing -> Left "response missing 'releases' field"
+        Just (Aeson.Array releases) ->
+          Right [v | Aeson.Object rel <- toList releases, Just (Aeson.String v) <- [KeyMap.lookup "version" rel]]
+        Just _ -> Left "'releases' is not an array"
+    Right _ -> Left "response is not a JSON object"
+ where
+  toList = foldr (:) []
+
 lookupKey :: Text -> KeyMap.KeyMap Aeson.Value -> Either Text Aeson.Value
 lookupKey k m = case KeyMap.lookup (Key.fromText k) m of
   Nothing -> Left $ "missing field '" <> k <> "'"
@@ -72,7 +95,7 @@ lookupText k m = case KeyMap.lookup (Key.fromText k) m of
   Just _ -> Left $ "field '" <> k <> "' is not a string"
 
 -- | Resolve a package name and version to a nixpkgs commit via the Nixhub API.
-resolveVersion :: Text -> Text -> Text -> IO (Either Text NixhubResponse)
+resolveVersion :: Text -> Text -> Text -> IO (Either ResolveError NixhubResponse)
 resolveVersion name version system = do
   manager <- newManager tlsManagerSettings
   let url =
@@ -83,6 +106,22 @@ resolveVersion name version system = do
   request <- parseRequest url
   response <- httpLbs request manager
   let status = statusCode (responseStatus response)
-  if status /= 200
-    then pure $ Left $ "API returned status " <> T.pack (show status)
-    else pure $ parseNixhubResponse (responseBody response) system
+  pure $ case status of
+    200 -> case parseNixhubResponse (responseBody response) system of
+      Left err -> Left $ ApiError err
+      Right r -> Right r
+    404 -> Left VersionNotFound
+    _ -> Left $ ApiError $ "API returned status " <> T.pack (show status)
+
+-- | Fetch the list of available versions for a package.
+fetchVersions :: Text -> IO (Either Text [Text])
+fetchVersions name = do
+  manager <- newManager tlsManagerSettings
+  let url = "https://search.devbox.sh/v2/pkg?name=" <> T.unpack name
+  request <- parseRequest url
+  response <- httpLbs request manager
+  let status = statusCode (responseStatus response)
+  pure $ case status of
+    200 -> parseVersionList (responseBody response)
+    404 -> Left $ "package '" <> name <> "' not found"
+    _ -> Left $ "API returned status " <> T.pack (show status)

@@ -16,18 +16,23 @@ library
   default-language: GHC2021
   exposed-modules:
     Vx.Api
+    Vx.Cache
     Vx.Exec
     Vx.Parse
     Vx.Platform
     Vx.Resolve
+    Vx.Suggest
   build-depends:
     , aeson
     , base                 >=4.18 && <5
     , bytestring
+    , containers
+    , directory
     , http-client
     , http-client-tls
     , http-types
     , text
+    , time
     , unix
 
 executable vx
@@ -38,6 +43,7 @@ executable vx
   build-depends:
     , base >=4.18 && <5
     , text
+    , time
     , vx
 
 test-suite vx-test
@@ -52,7 +58,11 @@ test-suite vx-test
   build-depends:
     , aeson
     , base       >=4.18 && <5
+    , containers
+    , directory
     , hspec
     , QuickCheck
     , text
+    , time
+    , vector
     , vx
