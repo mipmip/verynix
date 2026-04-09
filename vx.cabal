@@ -1,0 +1,53 @@
+cabal-version: 3.0
+name:          vx
+version:       0.1.0.0
+synopsis:      Run any version of any Nix package in one command
+license:       MIT
+build-type:    Simple
+
+common warnings
+  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates
+               -Wincomplete-uni-patterns -Wpartial-fields -Wredundant-constraints
+  default-extensions: OverloadedStrings
+
+library
+  import:           warnings
+  hs-source-dirs:   src
+  default-language: GHC2021
+  exposed-modules:
+    Vx.Api
+    Vx.Exec
+    Vx.Parse
+    Vx.Resolve
+  build-depends:
+    , aeson
+    , base                 >=4.18 && <5
+    , http-client
+    , http-client-tls
+    , optparse-applicative
+    , text
+    , typed-process
+
+executable vx
+  import:           warnings
+  hs-source-dirs:   src
+  main-is:          Main.hs
+  default-language: GHC2021
+  build-depends:
+    , base >=4.18 && <5
+    , vx
+
+test-suite vx-test
+  import:           warnings
+  type:             exitcode-stdio-1.0
+  hs-source-dirs:   test
+  main-is:          Spec.hs
+  default-language: GHC2021
+  ghc-options:      -threaded -rtsopts -with-rtsopts=-N
+  build-tool-depends:
+    hspec-discover:hspec-discover
+  build-depends:
+    , base       >=4.18 && <5
+    , hspec
+    , QuickCheck
+    , vx
