@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-04-14
+
 ### Added
 - `--help` / `-h` flag with auto-generated usage info via optparse-applicative
 - `--version` / `-V` flag showing version from cabal file
