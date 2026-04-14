@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Added
+- `--help` / `-h` flag with auto-generated usage info via optparse-applicative
+- `--version` / `-V` flag showing version from cabal file
+- `--verbose` / `-v` flag showing resolution details (API URL, resolved commit, exec command)
+- Latest version support: `vx hugo serve` and `vx hugo-latest serve` resolve and run the latest version
+
 ## [0.1.2] - 2026-04-14
 - fix release script
 

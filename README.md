@@ -34,13 +34,13 @@ The version resolution uses the [Nixhub API](https://www.nixhub.io/) (by Jetify)
 ## Installation
 
 ```bash
-nix run github:pim-hoeven/verynix
+nix run github:mipmip/verynix
 ```
 
 Or build locally:
 
 ```bash
-git clone https://github.com/pim-hoeven/verynix.git
+git clone https://github.com/mipmip/verynix.git
 cd verynix
 nix build
 ./result/bin/vx
@@ -48,15 +48,65 @@ nix build
 
 ## Usage
 
-| Command | Description | Status |
+```
+vx [-v|--verbose] [--no-cache] <package>[-<version>] [ARGS...]
+```
+
+### Run a specific version
+
+```bash
+vx hugo-0.147.9 serve
+vx nodejs-20.11.0 --version
+vx python3-3.12.0 -c "print('hello')"
+```
+
+### Run the latest version
+
+```bash
+vx hugo serve           # omit version for latest
+vx hugo-latest serve    # or use "latest" explicitly
+```
+
+### Flags
+
+| Flag | Short | Description |
 |---|---|---|
-| `vx <pkg>-<version> [args...]` | Resolve and run a package | Not yet implemented |
-| `vx search <query>` | Search available packages | Not yet implemented |
-| `vx versions <pkg>` | List available versions | Not yet implemented |
-| `vx resolve <pkg>-<version>` | Show the nix run command without executing | Not yet implemented |
+| `--verbose` | `-v` | Show resolution details (API URL, resolved commit, exec command) |
+| `--no-cache` | | Bypass the local cache |
+| `--version` | `-V` | Show vx version |
+| `--help` | `-h` | Show usage info |
 
-## Status
+### Examples
 
-Scaffold built — the Haskell project compiles, tests run, and coverage reports. Core functionality (version resolution, execution) is not yet implemented.
+```bash
+# Run hugo 0.147.9 and start the dev server
+vx hugo-0.147.9 serve
 
-See [CONTEXT.md](CONTEXT.md) for research and design context. See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup.
+# See what's happening under the hood
+vx --verbose hugo-0.147.9 version
+
+# Run latest hugo without caching
+vx --no-cache hugo serve
+```
+
+When a requested version doesn't exist, vx shows the nearest available versions:
+
+```
+$ vx hugo-0.149.1 version
+version 0.149.1 of hugo not found
+
+nearest available versions:
+  < 0.148.2
+  > 0.150.0
+```
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute and [DEVELOPMENT.md](DEVELOPMENT.md) for development setup.
+
+## Using AI
+
+This project is without any hesitation made together with AI Coding agents
+using OpenSpec methodology.
+
+
