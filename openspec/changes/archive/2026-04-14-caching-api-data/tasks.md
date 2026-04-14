@@ -22,5 +22,5 @@
 
 - [x] 4.1 Verify `cabal build` compiles
 - [x] 4.2 Verify `cabal test` passes
-- [ ] 4.3 Manual test: run `vx <pkg>-<ver>` twice, confirm second invocation skips API call
-- [ ] 4.4 Manual test: run with `--no-cache`, confirm API is called
+- [x] 4.3 Manual test: run `vx <pkg>-<ver>` twice, confirm second invocation skips API call
+- [x] 4.4 Manual test: run with `--no-cache`, confirm API is called

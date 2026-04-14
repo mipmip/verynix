@@ -1,0 +1,23 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/),
+and this project adheres to [Semantic Versioning](https://semver.org/).
+
+## [Unreleased]
+
+### Added
+- Release script with interactive version bump via gum, changelog management, and GitHub release creation
+- CHANGELOG.md following Keep a Changelog format
+- SemVer versioning (switched from PVP 4-component)
+
+## [0.1.0] - 2026-04-14
+
+### Added
+- Resolve and run any Nix package version: `vx hugo-0.147.9 serve`
+- Version resolution via Nixhub API
+- Version suggestions when requested version doesn't exist (shows nearest lower and upper)
+- Local caching of resolved versions and available version lists
+- `--no-cache` flag to bypass cache
+- initial start of verynix project

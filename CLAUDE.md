@@ -22,3 +22,7 @@ You are allowed to update these statuses in the task frontmatter:
 When making changes you are allowed to update the date/time in `updated_at` in the task frontmatter 
 
 Besides updating status and openspec-link, you are NOT ALLOWED to modify the contents of the task file.
+
+# Changelog
+
+When archiving a change, add a summary line to the `## [Unreleased]` section of CHANGELOG.md under the appropriate category (Added, Changed, Deprecated, Removed, Fixed, Security). Follow Keep a Changelog format.
