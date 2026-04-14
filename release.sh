@@ -23,10 +23,18 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
-current_branch=$(git branch --show-current)
-if [ "$current_branch" != "main" ]; then
-  echo "error: not on main branch (on '$current_branch'). Switch to main first." >&2
-  exit 1
+# Support both git branches and jj bookmarks
+if command -v jj &>/dev/null && jj root &>/dev/null; then
+  if ! jj log -r @ --no-graph -T 'bookmarks' 2>/dev/null | grep -q 'main'; then
+    echo "error: current jj change does not have the 'main' bookmark." >&2
+    exit 1
+  fi
+else
+  current_branch=$(git branch --show-current)
+  if [ "$current_branch" != "main" ]; then
+    echo "error: not on main branch (on '$current_branch'). Switch to main first." >&2
+    exit 1
+  fi
 fi
 
 # --- Read current version ---
