@@ -1,6 +1,6 @@
 cabal-version: 3.0
 name:          vx
-version:       0.1.1
+version:       0.1.2
 synopsis:      Run any version of any Nix package in one command
 license:       MIT
 build-type:    Simple
