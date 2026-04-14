@@ -18,23 +18,10 @@ if ! gh auth status &>/dev/null; then
   exit 1
 fi
 
-if [ -n "$(git status --porcelain)" ]; then
+# Dirty working directory check (works for both git and jj-colocated)
+if ! git diff --quiet || ! git diff --cached --quiet; then
   echo "error: working tree is not clean. Commit or stash changes first." >&2
   exit 1
-fi
-
-# Support both git branches and jj bookmarks
-if command -v jj &>/dev/null && jj root &>/dev/null; then
-  if ! jj log -r @ --no-graph -T 'bookmarks' 2>/dev/null | grep -q 'main'; then
-    echo "error: current jj change does not have the 'main' bookmark." >&2
-    exit 1
-  fi
-else
-  current_branch=$(git branch --show-current)
-  if [ "$current_branch" != "main" ]; then
-    echo "error: not on main branch (on '$current_branch'). Switch to main first." >&2
-    exit 1
-  fi
 fi
 
 # --- Read current version ---
@@ -68,6 +55,13 @@ case "$bump" in
   patch) new_version="${major}.${minor}.$((patch + 1))" ;;
 esac
 
+# --- Check tag doesn't exist ---
+
+if git rev-parse "v${new_version}" &>/dev/null; then
+  echo "error: tag v${new_version} already exists." >&2
+  exit 1
+fi
+
 # --- Confirm ---
 
 if ! gum confirm "Release $current_version → $new_version?"; then
@@ -96,8 +90,8 @@ git tag "v${new_version}"
 
 # --- Push + GitHub release ---
 
-git push
-git push --tags
+git push origin HEAD:main
+git push origin "v${new_version}"
 gh release create "v${new_version}" --title "v${new_version}" --notes "$release_notes"
 
 echo ""
