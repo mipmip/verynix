@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-04-15
+
 ### Changed
 - Removed `flake-utils` dependency, using native Nix `genAttrs` instead
 
