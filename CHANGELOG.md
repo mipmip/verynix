@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+- Removed `flake-utils` dependency, using native Nix `genAttrs` instead
+
+### Fixed
+- Strict argument ordering: flags after the package spec (e.g., `vx hugo --help`) now pass through to the package instead of being captured by vx
+
 ## [0.2.0] - 2026-04-14
 
 ### Added

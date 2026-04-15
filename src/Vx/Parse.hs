@@ -1,6 +1,7 @@
 module Vx.Parse
   ( PackageSpec (..)
   , parsePackageSpec
+  , splitArgs
   ) where
 
 import Data.Text (Text)
@@ -35,3 +36,11 @@ parsePackageSpec input
               Just PackageSpec{packageName = input, packageVersion = Nothing}
  where
   isVersionChar c = c >= '0' && c <= '9'
+
+-- | Split argv into vx flags (before first non-flag arg) and the rest.
+-- A non-flag arg is one that doesn't start with '-'.
+splitArgs :: [String] -> ([String], [String])
+splitArgs [] = ([], [])
+splitArgs (a : as)
+  | '-' : _ <- a = let (flags, rest) = splitArgs as in (a : flags, rest)
+  | otherwise = ([], a : as)

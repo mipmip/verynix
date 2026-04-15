@@ -5,37 +5,34 @@ import qualified Data.Text as T
 import Data.Time.Clock (getCurrentTime)
 import Options.Applicative
 import Paths_vx (version)
+import System.Environment (getArgs)
 import System.Exit (exitFailure)
 import System.IO (hPutStrLn, stderr)
 import Vx.Api (ResolveError (..), fetchVersions, resolveVersion)
 import Vx.Cache (PackageCache (..), addVersion, cachePath, emptyCache, lookupVersion, readCache, setAvailableVersions, writeCache)
 import Vx.Exec (execNixRun)
-import Vx.Parse (PackageSpec (..), parsePackageSpec)
+import Vx.Parse (PackageSpec (..), parsePackageSpec, splitArgs)
 import Vx.Platform (currentSystem)
 import Vx.Resolve (NixRunCommand (..), buildNixRunCommand, renderCommand)
 import Vx.Suggest (findNeighbors, formatSuggestion)
 
-data Options = Options
-  { optVerbose :: Bool
-  , optNoCache :: Bool
-  , optSpec :: String
-  , optArgs :: [String]
+data VxFlags = VxFlags
+  { flagVerbose :: Bool
+  , flagNoCache :: Bool
   }
 
-optionsParser :: Parser Options
-optionsParser =
-  Options
+vxFlagsParser :: Parser VxFlags
+vxFlagsParser =
+  VxFlags
     <$> switch (long "verbose" <> short 'v' <> help "Show resolution details")
     <*> switch (long "no-cache" <> help "Bypass the local cache")
-    <*> argument str (metavar "<package>[-<version>]")
-    <*> many (argument str (metavar "ARGS..."))
 
-opts :: ParserInfo Options
-opts =
+vxFlagsInfo :: ParserInfo VxFlags
+vxFlagsInfo =
   info
-    (optionsParser <**> helper <**> versionOption)
+    (vxFlagsParser <**> helper <**> versionOption)
     ( fullDesc
-        <> progDesc "Run any version of any Nix package"
+        <> progDesc "Run any version of any Nix package\n\nUsage: vx [FLAGS] <package>[-<version>] [ARGS...]"
         <> header "vx - Very niX"
     )
  where
@@ -43,18 +40,26 @@ opts =
 
 main :: IO ()
 main = do
-  options <- execParser opts
-  case parsePackageSpec (T.pack (optSpec options)) of
-    Nothing -> die $ "could not parse package spec: " <> optSpec options
-    Just pkg -> run options pkg (map T.pack (optArgs options))
+  allArgs <- getArgs
+  let (vxArgs, remainder) = splitArgs allArgs
+
+  -- Parse vx flags (--help, --version handled here when no package spec)
+  flags <- handleParseResult $ execParserPure defaultPrefs vxFlagsInfo vxArgs
+
+  case remainder of
+    [] -> die "usage: vx [FLAGS] <package>[-<version>] [ARGS...]"
+    (spec : passthrough) ->
+      case parsePackageSpec (T.pack spec) of
+        Nothing -> die $ "could not parse package spec: " <> spec
+        Just pkg -> run flags pkg (map T.pack passthrough)
  where
-  run options pkg passthrough = do
-    let verbose = optVerbose options
+  run flags pkg passthrough = do
+    let verbose = flagVerbose flags
         name = packageName pkg
         ver = packageVersion pkg
         isLatest = ver == Nothing
         versionStr = maybe "latest" id ver
-        useCache = not (optNoCache options) && not isLatest
+        useCache = not (flagNoCache flags) && not isLatest
         apiUrl = "https://search.devbox.sh/v2/resolve?name=" <> name <> "&version=" <> versionStr
         versionDisplay = maybe "(latest)" id ver
 

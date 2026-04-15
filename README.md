@@ -33,17 +33,26 @@ The version resolution uses the [Nixhub API](https://www.nixhub.io/) (by Jetify)
 
 ## Installation
 
+### Nix profile (permanent)
+
 ```bash
-nix run github:mipmip/verynix
+nix profile install github:mipmip/verynix
 ```
 
-Or build locally:
+### Nix flake (in your flake)
+
+```nix
+# Add to inputs
+inputs.verynix.url = "github:mipmip/verynix";
+
+# Add to packages
+inputs.verynix.packages.${system}.default
+```
+
+### Try without installing
 
 ```bash
-git clone https://github.com/mipmip/verynix.git
-cd verynix
-nix build
-./result/bin/vx
+nix run github:mipmip/verynix -- hugo-0.154.3 serve
 ```
 
 ## Usage

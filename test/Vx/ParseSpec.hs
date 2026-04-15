@@ -29,3 +29,32 @@ spec = describe "Vx.Parse" $ do
 
     it "returns Nothing for empty input" $
       parsePackageSpec "" `shouldBe` Nothing
+
+  describe "splitArgs" $ do
+    it "splits flags from package and passthrough" $
+      splitArgs ["--verbose", "--no-cache", "hugo", "serve"]
+        `shouldBe` (["--verbose", "--no-cache"], ["hugo", "serve"])
+
+    it "passes --help after package to passthrough" $
+      splitArgs ["hugo", "--help"]
+        `shouldBe` ([], ["hugo", "--help"])
+
+    it "passes --version after package to passthrough" $
+      splitArgs ["hugo", "--version"]
+        `shouldBe` ([], ["hugo", "--version"])
+
+    it "keeps all flags before package as vx flags" $
+      splitArgs ["--verbose", "hugo-0.147.9", "--port", "8080"]
+        `shouldBe` (["--verbose"], ["hugo-0.147.9", "--port", "8080"])
+
+    it "handles no flags" $
+      splitArgs ["hugo", "serve"]
+        `shouldBe` ([], ["hugo", "serve"])
+
+    it "handles only flags (no package)" $
+      splitArgs ["--help"]
+        `shouldBe` (["--help"], [])
+
+    it "handles empty args" $
+      splitArgs []
+        `shouldBe` ([], [])
